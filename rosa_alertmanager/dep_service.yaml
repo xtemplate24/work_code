@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moogsoft-adapter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: moogsoft-adapter
+  template:
+    metadata:
+      labels:
+        app: moogsoft-adapter
+    spec:
+      containers:
+        - name: adapter
+          image: registry.redhat.io/ubi9/python-311:latest
+          command: ["python3", "/app/app.py"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MOOGSOFT_URL
+              value: "https://api.moogsoft.ai/express/v1/integrations/custom/6a714f0c86f8d292ed614073"
+            - name: PROXY_URL
+              value: "http://10.80.198.88:8080"
+            - name: MOOGSOFT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: moogsoft-api-key
+                  key: apiKey
+          volumeMounts:
+            - name: adapter-code
+              mountPath: /app
+      volumes:
+        - name: adapter-code
+          configMap:
+            name: moogsoft-adapter-code
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: moogsoft-adapter
+spec:
+  selector:
+    app: moogsoft-adapter
+  ports:
+    - port: 8080
+      targetPort: 8080

@@ -1,0 +1,9 @@
+oc create configmap moogsoft-adapter-code --from-file=app.py
+oc create secret generic moogsoft-api-key --from-literal=apiKey='xxxx'
+
+
+Changes
+
+webhook_configs:
+- url: http://moogsoft-adapter.<your-namespace>.svc.cluster.local:8080
+  send_resolved: false
